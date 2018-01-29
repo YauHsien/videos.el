@@ -45,18 +45,38 @@ according to ((id . _) (updated_time .
         (hour    (caaar decoded-time))
         (minute   (caar decoded-time))
         (second    (car decoded-time))
-        (date-string (format-date-string year month day hour minute second)))
+        (date-string (format "%04d%02d%02d%02d%02d%02d" year month day hour minute second))
+        (has-keyword (not (nil (string-match "月亮 " description))))
+        (distilled-desc (distill-description (split-string description "\n"))))
     (cond
      ((null description) nil)
-     ((and (>= hour 12) (<= hour 15)) (get-file-name date-string description))
+     (has-keyword (get-file-name date-string distilled-desc))
+     ((and (>= hour 12) (<= hour 15)) (get-file-name date-string distilled-desc))
      (t nil))))
 
+(defun distill-description (splited-description)
+  "distill lecturer and subject
+講者與標題格式可能有二種：一種是倒數第二行是講者，而最後一行是標題。
+另一種則是最後幾行以 \"+\" 開頭的行是講者們，而在講者們之前一行或隔一行是標題。"
+  (let ((pull-reversed (reverse (strip-empty-string splited-description nil)))
+        (lecturer (find-lecturer pull-reversed))
+        (subject (find-subject pull-reversed)))
+    (append lecturer (list subject))))
+
+(defun strip-empty-string (data acc)
+  "Tick out empty string from data"
+  (cond ((null data) (reverse acc))
+        (t (cond ((equal "" (car data)) (strip-empty-string (cdr data) acc))
+                 (t (strip-empty-string (cdr data) (cons (car data) acc)))))))
+
+(defun get-file-name (date-string description)
+  "Get a file-name with date and description"
+  (format "%s_%s" date-string (trans-desc description)))
+
+;;TODO (defun find-lecturer)
+;;TODO (defun find-subject)
+;;TODO (defun trans-desc)
+
 ;;test
-(defun test (data)
-  ""
-  (parse-time-string
-   "\d"
-   ;"(\d\d\d\d)-(\d\d)-(\d\d)T(\d\d):(\d\d):(\d\d)[+-]\d+"
-   (cdr (assoc 'updated_time data))))
 
 ;;rest
