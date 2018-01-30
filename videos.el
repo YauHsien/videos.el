@@ -73,8 +73,21 @@ according to ((id . _) (updated_time .
   "Get a file-name with date and description"
   (format "%s_%s" date-string (trans-desc description)))
 
-;;TODO (defun find-lecturer)
-;;TODO (defun find-subject)
+(defun find-lecturer (data)
+  "講者與標題格式可能有二種：一種是倒數第二行是講者，而最後一行是標題。
+另一種則是最後幾行以 \"+\" 開頭的行是講者們，而在講者們之前一行或隔一行是標題。"
+  (cond ((nil (string-match "^+" (car data))) (list (cdar data)))
+        (t (take-lecturers data))))
+
+(defun find-subject (data)
+  "講者與標題格式可能有二種：一種是倒數第二行是講者，而最後一行是標題。
+另一種則是最後幾行以 \"+\" 開頭的行是講者們，而在講者們之前一行或隔一行是標題。"
+  (cond ((nil (string-match "^+" (car data))) (list (car data)))
+        (t (take-subject-behind-lecturers data))))
+
+;;TODO (defun take-lecturers (data))
+;;TODO (defun take-subject-behind-lecturers (data))
+
 ;;TODO (defun trans-desc)
 
 ;;test
