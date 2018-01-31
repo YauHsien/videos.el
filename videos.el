@@ -12,7 +12,7 @@ in to to-folder"
   "Retrieve list of pair (video ID, name)
 from data like content of videos.json"
   (retrieve-v-n-pairs
-   (cdar data)))
+   (cdr (assoc 'data data))))
 
 (defun retrieve-v-n-pairs (data)
   "Retrieve pairs (video ID, name)"
@@ -76,19 +76,32 @@ according to ((id . _) (updated_time .
 (defun find-lecturer (data)
   "講者與標題格式可能有二種：一種是倒數第二行是講者，而最後一行是標題。
 另一種則是最後幾行以 \"+\" 開頭的行是講者們，而在講者們之前一行或隔一行是標題。"
-  (cond ((nil (string-match "^+" (car data))) (list (cdar data)))
+  (cond ((null (string-match "^+" (car data))) (list (cdar data)))
         (t (take-lecturers data))))
 
 (defun find-subject (data)
   "講者與標題格式可能有二種：一種是倒數第二行是講者，而最後一行是標題。
 另一種則是最後幾行以 \"+\" 開頭的行是講者們，而在講者們之前一行或隔一行是標題。"
-  (cond ((nil (string-match "^+" (car data))) (list (car data)))
+  (cond ((null (string-match "^+" (car data))) (list (car data)))
         (t (take-subject-behind-lecturers data))))
 
-;;TODO (defun take-lecturers (data))
-;;TODO (defun take-subject-behind-lecturers (data))
+(defun take-lecturers (data)
+  "取得前面幾個 + 開頭的詞"
+  (cond ((null (string-match "^+" (car data))) nil)
+        (t (cons (car data) (take-lecturers (cdr data))))))
 
-;;TODO (defun trans-desc)
+(defun take-subject-behind-lecturers (data)
+  "跳過前面幾個 + 開頭的詞，取下一行"
+  (cond ((null (string-match "^+" (car data))) (car data))
+        (t (take-subject-behind-lecturers (cdr data)))))
+
+(defun trans-desc (data)
+  "merge a list into a string"
+  (replace-regexp-in-string
+   "[+]" "_"
+   (replace-regexp-in-string
+    "[()]" "--"
+    (mapconcat 'identity data " "))))
 
 ;;test
 
